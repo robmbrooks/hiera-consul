@@ -1,0 +1,38 @@
+{
+  "name": "robmbrooks-hiera_consul",
+  "version": "0.1.0",
+  "author": "Robert Brooks",
+  "summary": "Hiera 5 backend to query consul kv store",
+  "license": "Apache 2.0",
+  "source": "https://github.com/robmbrooks/hiera-consul",
+  "project_page": "https://github.com/robmbrooks/hiera-consul",
+  "issues_url": "https://github.com/robmbrooks/hiera-consul/issues",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "12.04",
+        "14.04",
+        "16.04",
+        "18.04"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    }
+  ],
+  "dependencies": [
+  ]
+}
