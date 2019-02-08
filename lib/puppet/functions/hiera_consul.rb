@@ -13,11 +13,11 @@ Puppet::Functions.create_function(:hiera_consul) do
   def consul_data_hash(options, context)
     Diplomat.configure do |config|
       # Set up a custom Consul URL
-      config.url = options[:url] if options.key?(:url)
+      config.url = options['url'] if options.key?('url')
       # Set up a custom Faraday Middleware
-      config.middleware = options[:middleware] if options.key?(:middleware)
+      config.middleware = options['middleware'] if options.key?('middleware')
       # Set extra Faraday configuration options and custom access token (ACL)
-      config.options = options[:options] if options.key?(:options)
+      config.options = options['options'] if options.key?('options')
     end
     begin
       kv = Diplomat::Kv.get('/', recurse: true, convert_to_hash: true)
