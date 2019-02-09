@@ -13,7 +13,7 @@ Puppet::Functions.create_function(:hiera_consul) do
   end
 
   def consul_data_hash(options, context)
-    options['search'] =  ['/' ] unless options.key?('search')
+    options['search'] =  ['/'] unless options.key?('search')
     Diplomat.configure do |config|
       # Set up a custom Consul URL
       config.url = options['url'] if options.key?('url')
