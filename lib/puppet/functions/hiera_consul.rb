@@ -22,19 +22,16 @@ Puppet::Functions.create_function(:hiera_consul) do
       # Set extra Faraday configuration options and custom access token (ACL)
       config.options = options['options'] if options.key?('options')
     end
-    kv = {}
-    options['search'].each do |search|
-      kv = kv.deep_merge(diplomat_kv_get(search))
-    end
-    return kv
+    options['search'].map { |search|
+      diplomat_kv_get(search)
+    }.reduce(:deep_merge)
   end
 
   def diplomat_kv_get(search)
     begin
       kv = Diplomat::Kv.get(search + '/', recurse: true, convert_to_hash: true)
       search_path = search.split('/')
-      kv = kv.dig(*search_path) unless search_path.length.zero?
-      return kv
+      search_path.length.zero? ? kv : kv.dig(*search_path)
     rescue
       return {}
     end
