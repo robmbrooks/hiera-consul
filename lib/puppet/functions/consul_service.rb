@@ -31,7 +31,7 @@ module Puppet::Functions
       begin
         nodes = Diplomat::Service.get(service, :all)
       rescue => err
-        raise Puppet::ParseError, "Consul lookup failed: " + err
+        raise Puppet::ParseError, "Consul lookup failed: " + err.to_s
       end
   
       nodes.each_with_object({}) { |node, result|
