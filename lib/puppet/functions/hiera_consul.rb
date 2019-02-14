@@ -4,7 +4,7 @@ Puppet::Functions.create_function(:hiera_consul) do
     require 'diplomat'
     require 'backports' unless {}.respond_to? :dig
   rescue LoadError
-    raise Puppet::DataBinding::LookupError, "Error loading required."
+    raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul."
   end
 
   dispatch :consul_data_hash do
