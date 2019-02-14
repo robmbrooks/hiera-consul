@@ -25,7 +25,12 @@ Parse the incoming consul info and return a value
       # Set extra Faraday configuration options and custom access token (ACL)
       config.options = options['options'] if options.key?('options')
     end
-    nodes = Diplomat::Service.get(service, :all)
+
+    begin
+      nodes = Diplomat::Service.get(service, :all)
+    rescue => err
+      raise Puppet::ParseError, "Consul lookup failed: " + err
+    end
 
     nodes.each_with_object({}) { |node, result|
       result[node[:Node]] = filters.inject(node.to_h.stringify_keys) { |obj, method_and_args| obj.send(*method_and_args) }
