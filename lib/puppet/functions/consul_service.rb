@@ -10,12 +10,7 @@ module Puppet::Functions
       optional_param 'Hash', :options
     end
 
-    def consul_service_foo(service)
-      return { 'foo' => 'bar' }
-    end
-
     def consul_service(service, properties=false, options={})
-
       filters = [] 
       filters << [ :slice ] + properties if properties
 
