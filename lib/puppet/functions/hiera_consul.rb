@@ -3,8 +3,8 @@ Puppet::Functions.create_function(:hiera_consul) do
     require 'deep_merge'
     require 'diplomat'
     require 'backports' unless {}.respond_to? :dig
-  rescue LoadError
-    raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul."
+  rescue LoadError => err
+    raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul: " + err.to_s
   end
 
   dispatch :consul_data_hash do
