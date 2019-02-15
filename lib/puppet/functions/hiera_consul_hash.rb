@@ -1,4 +1,10 @@
-Puppet::Functions.create_function(:hiera_consul_lookup) do
+# The `hiera_consul_lookup` is a hiera 5 `data_hash` backend function.
+# See (https://puppet.com/docs/puppet/latest/hiera_custom_backends.html) for
+# more info.
+#
+# See README.md#hiera-backend for usage.
+#
+Puppet::Functions.create_function(:hiera_consul_hash) do
   begin
     require 'deep_merge'
     require 'diplomat'
