@@ -10,4 +10,5 @@ Hiera backend
       url: "http://consul.service.consul:8500"
       search:
         - "%{::environment}"
-        - ""```
+        - ""
+```
