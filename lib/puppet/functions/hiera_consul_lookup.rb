@@ -1,4 +1,4 @@
-Puppet::Functions.create_function(:hiera_consul) do
+Puppet::Functions.create_function(:hiera_consul_lookup) do
   begin
     require 'deep_merge'
     require 'diplomat'
