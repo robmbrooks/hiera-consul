@@ -1,3 +1,9 @@
+# Accepts up to 3 arguments, a service, a list of properties
+# and options for Diplomat such as url.
+# 
+# Returns a hash of nodes filtered to selected keys
+# or all properties if no second argument.
+#
 Puppet::Functions.create_function(:consul_service) do
   require 'backports/2.5.0/hash' unless {}.respond_to? :slice
   require 'backports/rails/hash' unless {}.respond_to? :stringify_keys
