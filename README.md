@@ -10,8 +10,10 @@ Puppet functions
 
 Provides service data from consul as a hash.
 
-```consul_service('consul', ['Node', 'Address'], { 'Datacenter' => 'dc1' }, { 'url' => 'http://example:8500' })
-# { 'consul1' => { 'Node' => 'consul1', 'Address' => '10.0.0.1' } , 'consul2' => { 'Node' => 'consul2', 'Address' => '10.0.0.2' }```
+```
+consul_service('consul', ['Node', 'Address'], { 'Datacenter' => 'dc1' }, { 'url' => 'http://example:8500' })
+# { 'consul1' => { 'Node' => 'consul1', 'Address' => '10.0.0.1' } , 'consul2' => { 'Node' => 'consul2', 'Address' => '10.0.0.2' }
+```
 
 
 
@@ -21,8 +23,10 @@ Provides service data from consul as a hash.
 
 Provides service data from consul as a list.
 
-```consul_service('consul', 'Address', { 'Datacenter' => 'dc1' }, { 'url' => 'http://example:8500' })
-# [ '10.0.0.1', '10.0.0.2', ]```
+```
+consul_service('consul', 'Address', { 'Datacenter' => 'dc1' }, { 'url' => 'http://example:8500' })
+# [ '10.0.0.1', '10.0.0.2', ]
+```
 
 Hiera backend
 -------------
