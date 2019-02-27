@@ -33,9 +33,8 @@ Puppet::Functions.create_function(:consul_service_list) do
       raise Puppet::ParseError, "Consul lookup failed: " + err.to_s
     end
 
-    nodes.map { |node|
-      next unless filter.dup.deep_merge(node) == node
-      node[property]
-    }.compact
+    nodes.each_with_object([]) { |node,result|
+      result << node[property] if filter.dup.deep_merge(node) == node
+    }
   end
 end
