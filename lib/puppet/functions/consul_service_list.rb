@@ -10,12 +10,13 @@ Puppet::Functions.create_function(:consul_service_list) do
   require 'diplomat'
 
   dispatch :consul_service_list do
-    param 'String', :service
+    param          'String', :service
     optional_param 'String', :property
-    optional_param 'Hash', :options
+    optional_param 'Hash',   :filter
+    optional_param 'Hash',   :options
   end
 
-  def consul_service_list(service, property='Node', options={})
+  def consul_service_list(service, property='Node', filter={}, options={})
 
     Diplomat.configure do |config|
       # Set up a custom Consul URL
@@ -27,13 +28,14 @@ Puppet::Functions.create_function(:consul_service_list) do
     end
 
     begin
-      nodes = Diplomat::Service.get(service, :all)
+      nodes = (Diplomat::Service.get(service, :all,)).map { |node| node.to_h.stringify_keys }
     rescue => err
       raise Puppet::ParseError, "Consul lookup failed: " + err.to_s
     end
 
     nodes.map { |node|
-      node.to_h.stringify_keys[property]
-    }
+      next unless filter.dup.deep_merge(node) == node
+      node[property]
+    }.compact
   end
 end

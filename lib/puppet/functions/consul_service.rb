@@ -7,17 +7,20 @@
 Puppet::Functions.create_function(:consul_service) do
   require 'backports/2.5.0/hash' unless {}.respond_to? :slice
   require 'backports/rails/hash' unless {}.respond_to? :stringify_keys
+  require 'deep_merge'
   require 'diplomat'
 
   dispatch :consul_service do
-    param 'String', :service
-    optional_param 'Array', :properties
-    optional_param 'Hash', :options
+    param          'String', :service
+    optional_param 'Array',  :properties
+    optional_param 'Hash',   :filter
+    optional_param 'Hash',   :options
   end
 
-  def consul_service(service, properties=false, options={})
-    filters = [] 
-    filters << [ :slice ] + properties if properties
+  def consul_service(service, properties=false, filter={}, options={})
+    property_filters = [] 
+    property_filters << [ :slice ] + properties if properties
+
 
     Diplomat.configure do |config|
       # Set up a custom Consul URL
@@ -29,13 +32,15 @@ Puppet::Functions.create_function(:consul_service) do
     end
 
     begin
-      nodes = Diplomat::Service.get(service, :all)
+      nodes = (Diplomat::Service.get(service, :all,)).map { |node| node.to_h.stringify_keys }
     rescue => err
       raise Puppet::ParseError, "Consul lookup failed: " + err.to_s
     end
 
     nodes.each_with_object({}) { |node, result|
-      result[node[:Node]] = filters.inject(node.to_h.stringify_keys) { |obj, method_and_args| obj.send(*method_and_args) }
+      next unless filter.dup.deep_merge(node) == node
+      result[node['Node']] = property_filters.inject(node) { |obj, method_and_args| obj.send(*method_and_args) }
     }
+
   end
 end
