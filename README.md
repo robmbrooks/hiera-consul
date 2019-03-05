@@ -1,6 +1,13 @@
 Consul query tools
 ==================
 
+This module implements Puppet functions that can be used to query consul. There's also a hiera backend that can be used to return query results from consul.
+
+Requirements
+============
+
+The Ruby gems "backports" and "diplomat" are required.
+
 Puppet functions
 ----------------
 
