@@ -49,10 +49,11 @@ Hiera backend
 -------------
 
 ```  - name: "Consul"
-    data_hash: hiera_consul_lookup
+    lookup_key: consul_lookup_key 
     options:
       url: "http://consul.service.consul:8500"
       search:
         - "%{::environment}"
         - ""
+      mount: 'consul'
 ```

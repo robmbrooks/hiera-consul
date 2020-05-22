@@ -1,4 +1,4 @@
-# The `hiera_consul_lookup` is a hiera 5 `data_hash` backend function.
+# The `consul_lookup_key` is a hiera 5 `lookup_key` backend function.
 # See (https://puppet.com/docs/puppet/latest/hiera_custom_backends.html) for
 # more info.
 #
@@ -23,30 +23,35 @@ Puppet::Functions.create_function(:consul_lookup_key) do
     return context.cached_value(key) if context.cache_has_key(key)
 
     options['search'] =  [''] unless options.key?('search')
-    Diplomat.configure do |config|
-      # Set up a custom Consul URL
-      config.url = options['url'] if options.key?('url')
-      # Set up a custom Faraday Middleware
-      config.middleware = options['middleware'] if options.key?('middleware')
-      # Set extra Faraday configuration options and custom access token (ACL)
-      config.options = options['options'] if options.key?('options')
-    end
-    raw_data = options['search'].map { |search|
-      diplomat_kv_get(search)
+    options['mount'] = 'consul' unless options.key?('mount')
+
+    return context.not_found unless key == options['mount']
+
+    consul_data = options['search'].map { |search|
+        diplomat_kv_get(search,context,options)
     }.reduce(:deep_merge)
-    context.cache_all(raw_data)
-    if raw_data.include?(key)
-      return raw_data['key']
-    else
-      context.not_found unless raw_data.include?(key)
-    end
+
+    context.cache(key, consul_data)
+
+    return consul_data
   end
 
-  def diplomat_kv_get(search)
+  def diplomat_kv_get(search,context,options)
+    return context.cached_value("__#{search}") if context.cache_has_key("__#{search}")
     begin
+      Diplomat.configure do |config|
+        # Set up a custom Consul URL
+        config.url = options['url'] if options.key?('url')
+        # Set up a custom Faraday Middleware
+        config.middleware = options['middleware'] if options.key?('middleware')
+        # Set extra Faraday configuration options and custom access token (ACL)
+        config.options = options['options'] if options.key?('options')
+      end
+
       kv = Diplomat::Kv.get(search + '/', recurse: true, convert_to_hash: true)
+      kv.delete('vault')
       search_path = search.split('/')
-      search_path.length.zero? ? kv : kv.dig(*search_path)
+      context.cache("__#{search}", search_path.length.zero? ? kv : kv.dig(*search_path))
     rescue
       return {}
     end
