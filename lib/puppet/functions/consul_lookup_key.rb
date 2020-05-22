@@ -24,9 +24,9 @@ Puppet::Functions.create_function(:consul_lookup_key) do
 
     options['search'] =  [''] unless options.key?('search')
 
-    consul_data = context.cached_value(nil)
-
-    if consul_data.nil?
+    if context.cache_has_key(nil)
+      consul_data = context.cached_value(nil)
+    else
       Diplomat.configure do |config|
         # Set up a custom Consul URL
         config.url = options['url'] if options.key?('url')
