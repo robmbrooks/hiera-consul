@@ -1,4 +1,4 @@
-# The `hiera_consul_lookup` is a hiera 5 `data_hash` backend function.
+# The `consul_lookup_key` is a hiera 5 `lookup_key` backend function.
 # See (https://puppet.com/docs/puppet/latest/hiera_custom_backends.html) for
 # more info.
 #
@@ -41,12 +41,13 @@ Puppet::Functions.create_function(:consul_lookup_key) do
       }.reduce(:deep_merge)
 
       context.cache_all(consul_data)
+      context.cache(nil,consul_data)
     end
 
     if consul_data.include?(key)
       return consul_data['key']
     else
-      context.not_found unless consul_data.include?(key)
+      context.not_found
     end
   end
 
