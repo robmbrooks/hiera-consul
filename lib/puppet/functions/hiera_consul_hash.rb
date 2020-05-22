@@ -19,6 +19,7 @@ Puppet::Functions.create_function(:hiera_consul_hash) do
   end
 
   def consul_data_hash(options, context)
+    return context.cached_value(nil) if context.cache_has_key(nil)
     options['search'] =  [''] unless options.key?('search')
     Diplomat.configure do |config|
       # Set up a custom Consul URL
@@ -28,9 +29,10 @@ Puppet::Functions.create_function(:hiera_consul_hash) do
       # Set extra Faraday configuration options and custom access token (ACL)
       config.options = options['options'] if options.key?('options')
     end
-    options['search'].map { |search|
+    result = options['search'].map { |search|
       diplomat_kv_get(search)
     }.reduce(:deep_merge)
+    context.cache(nil, result)
   end
 
   def diplomat_kv_get(search)
