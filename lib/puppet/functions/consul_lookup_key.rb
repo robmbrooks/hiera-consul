@@ -45,9 +45,9 @@ Puppet::Functions.create_function(:consul_lookup_key) do
     end
 
     if consul_data.include?(key)
-      return consul_data['key']
+      return consul_data[key]
     else
-      context.not_found
+      return context.not_found
     end
   end
 
