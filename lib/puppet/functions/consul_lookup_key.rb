@@ -54,6 +54,7 @@ Puppet::Functions.create_function(:consul_lookup_key) do
   def diplomat_kv_get(search)
     begin
       kv = Diplomat::Kv.get(search + '/', recurse: true, convert_to_hash: true)
+      kv.delete('vault')
       search_path = search.split('/')
       search_path.length.zero? ? kv : kv.dig(*search_path)
     rescue
