@@ -23,22 +23,30 @@ Puppet::Functions.create_function(:consul_lookup_key) do
     return context.cached_value(key) if context.cache_has_key(key)
 
     options['search'] =  [''] unless options.key?('search')
-    Diplomat.configure do |config|
-      # Set up a custom Consul URL
-      config.url = options['url'] if options.key?('url')
-      # Set up a custom Faraday Middleware
-      config.middleware = options['middleware'] if options.key?('middleware')
-      # Set extra Faraday configuration options and custom access token (ACL)
-      config.options = options['options'] if options.key?('options')
+
+    consul_data = context.cached_value(nil)
+
+    if consul_data.nil?
+      Diplomat.configure do |config|
+        # Set up a custom Consul URL
+        config.url = options['url'] if options.key?('url')
+        # Set up a custom Faraday Middleware
+        config.middleware = options['middleware'] if options.key?('middleware')
+        # Set extra Faraday configuration options and custom access token (ACL)
+        config.options = options['options'] if options.key?('options')
+      end
+
+      consul_data = options['search'].map { |search|
+        diplomat_kv_get(search)
+      }.reduce(:deep_merge)
+
+      context.cache_all(consul_data)
     end
-    raw_data = options['search'].map { |search|
-      diplomat_kv_get(search)
-    }.reduce(:deep_merge)
-    context.cache_all(raw_data)
-    if raw_data.include?(key)
-      return raw_data['key']
+
+    if consul_data.include?(key)
+      return consul_data['key']
     else
-      context.not_found unless raw_data.include?(key)
+      context.not_found unless consul_data.include?(key)
     end
   end
 
