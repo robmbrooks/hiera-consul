@@ -4,7 +4,7 @@
 #
 # See README.md#hiera-backend for usage.
 #
-Puppet::Functions.create_function(:hiera_consul_hash) do
+Puppet::Functions.create_function(:consul_lookup_key) do
   begin
     require 'deep_merge'
     require 'diplomat'
@@ -13,13 +13,15 @@ Puppet::Functions.create_function(:hiera_consul_hash) do
     raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul: " + err.to_s
   end
 
-  dispatch :consul_data_hash do
+  dispatch :consul_lookup_key do
+    param 'String[1]', :key
     param 'Hash', :options
     param 'Puppet::LookupContext', :context
   end
 
-  def consul_data_hash(options, context)
-    return context.cached_value(nil) if context.cache_has_key(nil)
+  def consul_lookup_key(key, options, context)
+    return context.cached_value(key) if context.cache_has_key(key)
+
     options['search'] =  [''] unless options.key?('search')
     Diplomat.configure do |config|
       # Set up a custom Consul URL
@@ -29,10 +31,15 @@ Puppet::Functions.create_function(:hiera_consul_hash) do
       # Set extra Faraday configuration options and custom access token (ACL)
       config.options = options['options'] if options.key?('options')
     end
-    result = options['search'].map { |search|
+    raw_data = options['search'].map { |search|
       diplomat_kv_get(search)
     }.reduce(:deep_merge)
-    context.cache(nil, result)
+    context.cache_all(raw_data)
+    if raw_data.include?(key)
+      return raw_data['key']
+    else
+      context.not_found unless raw_data.include?(key)
+    end
   end
 
   def diplomat_kv_get(search)
