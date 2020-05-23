@@ -7,7 +7,7 @@
 Puppet::Functions.create_function(:consul_lookup_key) do
   require 'deep_merge'
   require 'diplomat'
-  # require 'backports' unless {}.respond_to? :dig
+  require 'backports' unless {}.respond_to? :dig
 
   dispatch :consul_lookup_key do
     param 'String[1]', :key
