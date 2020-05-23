@@ -5,13 +5,9 @@
 # See README.md#hiera-backend for usage.
 #
 Puppet::Functions.create_function(:consul_lookup_key) do
-  begin
-    require 'deep_merge'
-    require 'diplomat'
-    require 'backports' unless {}.respond_to? :dig
-  rescue LoadError => err
-    raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul: " + err.to_s
-  end
+  require 'deep_merge'
+  require 'diplomat'
+  # require 'backports' unless {}.respond_to? :dig
 
   dispatch :consul_lookup_key do
     param 'String[1]', :key
