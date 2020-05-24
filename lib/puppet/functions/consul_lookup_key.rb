@@ -21,6 +21,7 @@ Puppet::Functions.create_function(:consul_lookup_key) do
 
   def consul_lookup_key(key, options, context)
     return context.cached_value(key) if context.cache_has_key(key)
+    context.explain() { 'cached value not found performing consul lookup' }
 
     options['search'] =  [''] unless options.key?('search')
     options['mount'] = 'consul' unless options.key?('mount')
