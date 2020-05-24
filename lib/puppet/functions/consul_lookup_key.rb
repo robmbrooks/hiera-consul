@@ -5,9 +5,13 @@
 # See README.md#hiera-backend for usage.
 #
 Puppet::Functions.create_function(:consul_lookup_key) do
-  require 'deep_merge'
-  require 'diplomat'
-  require 'backports' unless {}.respond_to? :dig
+  begin
+    require 'deep_merge'
+    require 'diplomat'
+    require 'backports' unless {}.respond_to? :dig
+  rescue LoadError => err
+    raise Puppet::DataBinding::LookupError, "Error loading required gems for hiera_consul: " + err.to_s
+  end
 
   dispatch :consul_lookup_key do
     param 'String[1]', :key
@@ -19,10 +23,22 @@ Puppet::Functions.create_function(:consul_lookup_key) do
     return context.cached_value(key) if context.cache_has_key(key)
 
     options['search'] =  [''] unless options.key?('search')
+    options['mount'] = 'consul' unless options.key?('mount')
 
-    if context.cache_has_key(nil)
-      consul_data = context.cached_value(nil)
-    else
+    return context.not_found unless key == options['mount']
+
+    consul_data = options['search'].map { |search|
+        diplomat_kv_get(search,context,options)
+    }.reduce(:deep_merge)
+
+    context.cache(options['mount'], consul_data)
+
+    return consul_data
+  end
+
+  def diplomat_kv_get(search,context,options)
+    return context.cached_value("__#{search}") if context.cache_has_key("__#{search}")
+    begin
       Diplomat.configure do |config|
         # Set up a custom Consul URL
         config.url = options['url'] if options.key?('url')
@@ -32,27 +48,10 @@ Puppet::Functions.create_function(:consul_lookup_key) do
         config.options = options['options'] if options.key?('options')
       end
 
-      consul_data = options['search'].map { |search|
-        diplomat_kv_get(search)
-      }.reduce(:deep_merge)
-
-      context.cache_all(consul_data)
-      context.cache(nil,consul_data)
-    end
-
-    if consul_data.include?(key)
-      return consul_data[key]
-    else
-      return context.not_found
-    end
-  end
-
-  def diplomat_kv_get(search)
-    begin
       kv = Diplomat::Kv.get(search + '/', recurse: true, convert_to_hash: true)
       kv.delete('vault')
       search_path = search.split('/')
-      search_path.length.zero? ? kv : kv.dig(*search_path)
+      context.cache("__#{search}", search_path.length.zero? ? kv : kv.dig(*search_path))
     rescue
       return {}
     end
