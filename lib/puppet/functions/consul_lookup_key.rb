@@ -20,7 +20,12 @@ Puppet::Functions.create_function(:consul_lookup_key) do
   end
 
   def consul_lookup_key(key, options, context)
-    return context.cached_value(key) if context.cache_has_key(key)
+    if context.cache_has_key(key)
+      context.explain() { 'cached value present returning from cache' }
+      return context.cached_value(key)
+    end
+
+    context.explain() { 'cached value not found performing consul lookup' }
 
     options['search'] =  [''] unless options.key?('search')
     options['mount'] = 'consul' unless options.key?('mount')
@@ -31,9 +36,7 @@ Puppet::Functions.create_function(:consul_lookup_key) do
         diplomat_kv_get(search,context,options)
     }.reduce(:deep_merge)
 
-    context.cache(options['mount'], consul_data)
-
-    return consul_data
+    return context.cache(key, consul_data)
   end
 
   def diplomat_kv_get(search,context,options)
