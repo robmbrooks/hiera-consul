@@ -24,7 +24,8 @@ Puppet::Functions.create_function(:consul_lookup_key) do
     options['mount'] = 'consul' unless options.key?('mount')
 
     unless key == options['mount']
-      context.explain() { 'skipping this backend as value not at under mount' }
+      context.explain() { "skipping this backend as #{key} not under path of mount at #{options['mount']}" }
+
       return context.not_found
     end
 
