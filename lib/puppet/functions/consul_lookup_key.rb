@@ -20,17 +20,20 @@ Puppet::Functions.create_function(:consul_lookup_key) do
   end
 
   def consul_lookup_key(key, options, context)
+    options['search'] =  [''] unless options.key?('search')
+    options['mount'] = 'consul' unless options.key?('mount')
+
+    unless key == options['mount']
+      context.explain() { 'skipping this backend as value not at under mount' }
+      return context.not_found
+    end
+
     if context.cache_has_key(key)
       context.explain() { 'cached value present returning from cache' }
       return context.cached_value(key)
     end
 
     context.explain() { 'cached value not found performing consul lookup' }
-
-    options['search'] =  [''] unless options.key?('search')
-    options['mount'] = 'consul' unless options.key?('mount')
-
-    return context.not_found unless key == options['mount']
 
     consul_data = options['search'].map { |search|
         diplomat_kv_get(search,context,options)
